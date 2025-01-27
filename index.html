@@ -28,75 +28,87 @@
         .image-container img:hover {
             transform: scale(1.05);
         }
-        /* Styl dla trybu pełnoekranowego */
-        .fullscreen {
+
+        /* Styl dla lightbox'a */
+        .lightbox {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Dopasuj obraz bez przycinania */
             background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             cursor: pointer;
+        }
+        .lightbox.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <h1>Galeria obrazów</h1>
-    <div class="image-container" id="imageContainer">
-        <!-- Obrazy zostaną dodane automatycznie -->
+    <div class="image-container" id="imageContainer"></div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <img id="lightboxImage" src="" alt="Powiększony obraz">
     </div>
 
     <script>
         // Konfiguracja (zmień te wartości!)
-        const GITHUB_USER = 'kiwipl';  // np. 'janek123'
-        const REPO_NAME = 'nmic';        // np. 'moja-galeria'
+        const GITHUB_USER = 'kiwipl';
+        const REPO_NAME = 'nnmic';
 
-        // URL do GitHub API (pobiera listę plików z folderu głównego)
+        // URL do GitHub API
         const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/`;
 
-        // Pobierz listę plików i wyświetl obrazy
+        // Elementy DOM
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+
+        // Pobierz obrazy i stwórz galerię
         fetch(apiUrl)
             .then(response => response.json())
             .then(files => {
                 const imageContainer = document.getElementById('imageContainer');
                 
                 files.forEach(file => {
-                    // Pominięcie plików innych niż obrazy oraz pliku HTML
                     if (file.name.match(/\.(jpg|jpeg|png)$/i) && file.name !== 'index.html') {
                         const img = document.createElement('img');
-                        img.src = file.name; // Ścieżka względna (obraz w tym samym folderze)
+                        img.src = file.name;
                         img.alt = file.name;
                         imageContainer.appendChild(img);
 
-                        // Dodaj obsługę kliknięcia dla trybu pełnoekranowego
+                        // Kliknięcie w obraz: otwórz lightbox
                         img.addEventListener('click', () => {
-                            if (!document.fullscreenElement) {
-                                img.classList.add('fullscreen');
-                                if (img.requestFullscreen) {
-                                    img.requestFullscreen();
-                                } else if (img.webkitRequestFullscreen) { // Safari
-                                    img.webkitRequestFullscreen();
-                                } else if (img.msRequestFullscreen) { // IE/Edge
-                                    img.msRequestFullscreen();
-                                }
-                            } else {
-                                document.exitFullscreen();
-                            }
+                            lightboxImage.src = file.name; // Użyj bezpośredniego URL z GitHub
+                            lightbox.classList.add('active');
                         });
                     }
                 });
             })
             .catch(error => console.error('Błąd:', error));
 
-        // Obsługa wyjścia z trybu pełnoekranowego
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement) {
-                const fullscreenImg = document.querySelector('.fullscreen');
-                if (fullscreenImg) {
-                    fullscreenImg.classList.remove('fullscreen');
-                }
+        // Zamknij lightbox
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
+
+        // Zamknij klawiszem Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                lightbox.classList.remove('active');
             }
         });
     </script>
