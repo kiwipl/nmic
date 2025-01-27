@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .image-container {
+            margin: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        img {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+        // Function to fetch images from the directory
+        async function fetchImages() {
+            try {
+                // Fetch the directory listing (assumes your server supports it)
+                const response = await fetch('./');
+                const text = await response.text();
+
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                
+                // Find all links ending in .png or .jpg
+                const links = Array.from(doc.querySelectorAll('a'))
+                    .map(link => link.href)
+                    .filter(href => href.match(/\.(png|jpg|jpeg)$/i));
+
+                // Display the images
+                const body = document.body;
+                links.forEach(link => {
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
+
+                    const img = document.createElement('img');
+                    img.src = link;
+                    img.alt = 'Image';
+
+                    container.appendChild(img);
+                    body.appendChild(container);
+                });
+            } catch (error) {
+                console.error('Error fetching images:', error);
+            }
+        }
+
+        // Run the function
+        fetchImages();
+    </script>
+
+</body>
+</html>
