@@ -23,9 +23,22 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s;
+            cursor: pointer;
         }
         .image-container img:hover {
             transform: scale(1.05);
+        }
+        /* Styl dla trybu pełnoekranowego */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -56,10 +69,36 @@
                         img.src = file.name; // Ścieżka względna (obraz w tym samym folderze)
                         img.alt = file.name;
                         imageContainer.appendChild(img);
+
+                        // Dodaj obsługę kliknięcia dla trybu pełnoekranowego
+                        img.addEventListener('click', () => {
+                            if (!document.fullscreenElement) {
+                                img.classList.add('fullscreen');
+                                if (img.requestFullscreen) {
+                                    img.requestFullscreen();
+                                } else if (img.webkitRequestFullscreen) { // Safari
+                                    img.webkitRequestFullscreen();
+                                } else if (img.msRequestFullscreen) { // IE/Edge
+                                    img.msRequestFullscreen();
+                                }
+                            } else {
+                                document.exitFullscreen();
+                            }
+                        });
                     }
                 });
             })
             .catch(error => console.error('Błąd:', error));
+
+        // Obsługa wyjścia z trybu pełnoekranowego
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                const fullscreenImg = document.querySelector('.fullscreen');
+                if (fullscreenImg) {
+                    fullscreenImg.classList.remove('fullscreen');
+                }
+            }
+        });
     </script>
 </body>
 </html>
